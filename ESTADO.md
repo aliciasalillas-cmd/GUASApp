@@ -17,10 +17,11 @@
   - **Compatibilidad Extensible:** Función `formatPersonaInstruction` para estructurar tanto personalidades fijas como personalizadas creadas por el usuario.
 - [`backend/index.js`](file:///c:/Users/alici/DEVELOPER/GUASAPAPP/backend/index.js):
   - **Extracción Resiliente con Fallback Directo:** Integrada consulta directa a `window.Store.Chat` y `window.Store.Contact` vía Puppeteer cuando los métodos nativos de `whatsapp-web.js` se retrasan en sincronizar.
+  - **Nuevo Endpoint Manual (`POST /api/contacts/manual`):** Permite añadir amigos directamente por su número de teléfono (+34...) y guardarlos en Supabase sin esperar la descarga histórica.
   - **Blindaje contra Excepciones 500:** Todas las llamadas a `client.getContacts()` y `refreshContactMaps()` envueltas en `try...catch` con estructuras de fallback.
 - [`frontend/src/pages/Dashboard.tsx`](file:///c:/Users/alici/DEVELOPER/GUASAPAPP/frontend/src/pages/Dashboard.tsx):
+  - **Añadir Amigos por Número Directo:** Botón `➕ Nuevo` en la cabecera y en la tarjeta de bienvenida para poder empezar a trolear de inmediato con cualquier número.
   - **Auto-Reintento Inteligente de Sincronización:** Si los contactos tardan unos segundos en descargarse tras escanear el QR, el frontend reintenta automáticamente cada 3 segundos hasta cargarlos.
-  - **Tarjeta de Estado de Sincronización:** Vista explicativa y botón de «Actualizar Chats» cuando la lista está en proceso de carga inicial.
   - **Robustez de Red Total:** Variable `BACKEND_URL` conectada en directo a `https://guasapp-production.up.railway.app`.
 - [`frontend/vite.config.ts`](file:///c:/Users/alici/DEVELOPER/GUASAPAPP/frontend/vite.config.ts):
   - Configurado `workbox: { clientsClaim: true, skipWaiting: true }` para invalidación y actualización instantánea de la PWA en teléfonos móviles.
