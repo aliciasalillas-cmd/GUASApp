@@ -10,6 +10,11 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg}'],
+        clientsClaim: true,
+        skipWaiting: true
+      },
       includeAssets: ['favicon.svg', 'logo.jpg', 'logo.png'],
       manifest: {
         name: 'GUASApp - Troleo Inteligente',

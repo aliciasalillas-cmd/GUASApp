@@ -62,7 +62,9 @@ export default function Dashboard({ session }: { session: any }) {
   const getAuthHeaders = useCallback(() => {
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session?.access_token}`
+      'Authorization': `Bearer ${session?.access_token}`,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache'
     };
   }, [session?.access_token]);
 
