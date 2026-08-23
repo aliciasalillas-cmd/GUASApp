@@ -4,7 +4,7 @@ import QRCode from 'react-qr-code';
 import { io, Socket } from 'socket.io-client';
 import html2canvas from 'html2canvas';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3000' : `${window.location.protocol}//${window.location.hostname}:3000`);
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://guasapp-production.up.railway.app');
 
 const defaultPersonas = [
   { id: 'absurdo', name: 'Intelectual Absurdo', desc: '🧐 Pedante supremo, latinajos y palabras rimbombantes sin sentido.' },
@@ -869,20 +869,23 @@ export default function Dashboard({ session }: { session: any }) {
                   </div>
                   
                   <div>
-                    <label className="text-xs text-[#FFC4A8] block mb-1.5 font-bold">API Key de IA ({aiConfig.provider === 'gemini' ? 'Google AI Studio' : 'OpenAI'})</label>
+                    <label className="text-xs text-[#FFC4A8] block mb-1.5 font-bold">API Key Personal (Opcional)</label>
                     <input 
                       type="password"
                       value={aiConfig.apiKey || ''}
                       onChange={e => setAiConfig({...aiConfig, apiKey: e.target.value})}
-                      placeholder={aiConfig.provider === 'gemini' ? 'Pega tu clave gratuita de Google AI Studio (AIzaSy...)' : 'sk-proj-...'}
+                      placeholder="Dejar vacío para usar la clave gratuita del servidor"
                       className="w-full bg-[#18200B] border border-[#465522] focus:border-[#FF6B00] text-[#FFD6E8] rounded-xl p-2.5 text-xs focus:outline-none font-mono"
                     />
                   </div>
 
                   <div className="p-3 bg-[#18200B] border border-[#465522] rounded-2xl text-[11px] text-[#A3B880] space-y-1.5">
-                    <span className="font-bold text-[#FFD6E8] block">💡 Consejo de uso gratuito:</span>
+                    <span className="font-bold text-[#10B981] flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+                      Clave de Google Gemini Activa en el Servidor
+                    </span>
                     <p>
-                      Recomendamos usar <b>Google Gemini</b> con una API Key gratuita de <a href="https://aistudio.google.com" target="_blank" rel="noreferrer" className="text-[#FF6B00] underline font-bold">Google AI Studio</a>. Es 100% gratis, sin límites de prueba y responde en tiempo récord.
+                      El servidor ya cuenta con una <b>clave oficial de Google Gemini</b> configurada. No necesitas rellenar este campo a menos que quieras usar tu propia clave de <a href="https://aistudio.google.com" target="_blank" rel="noreferrer" className="text-[#FF6B00] underline font-bold">Google AI Studio</a> o tu cuenta de OpenAI.
                     </p>
                   </div>
                 </div>
