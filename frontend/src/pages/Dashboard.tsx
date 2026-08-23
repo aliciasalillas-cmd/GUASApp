@@ -153,10 +153,7 @@ export default function Dashboard({ session }: { session: any }) {
     newSocket.on('whatsapp_ready', () => {
       setWhatsappConnected(true);
       setQrCode(null);
-      if (!contactsLoaded.current) {
-        fetchContacts();
-        contactsLoaded.current = true;
-      }
+      fetchContacts();
     });
     
     newSocket.on('whatsapp_disconnected', () => {
@@ -204,17 +201,17 @@ export default function Dashboard({ session }: { session: any }) {
         
         if (data.whatsapp_connected !== undefined) {
           setWhatsappConnected(data.whatsapp_connected);
+          if (!data.whatsapp_connected) {
+            contactsLoaded.current = false;
+          } else if (!contactsLoaded.current) {
+            fetchContacts();
+          }
         }
         if (data.qr !== undefined) {
           setQrCode(data.qr);
         }
         if (data.config) {
           setAiConfig((prev: any) => prev?.apiKey === '' ? data.config : prev);
-        }
-
-        if (data.whatsapp_connected && !contactsLoaded.current) {
-          fetchContacts();
-          contactsLoaded.current = true;
         }
       } catch (error) {}
     };
