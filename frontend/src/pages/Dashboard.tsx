@@ -542,6 +542,22 @@ export default function Dashboard({ session }: { session: any }) {
                    <div className="w-8 h-8 border-2 border-[#FF6B00] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
                    Extrayendo chats tácticos de WhatsApp...
                  </div>
+              ) : contacts.length === 0 ? (
+                <div className="text-center py-10 px-4 bg-[#222B11]/80 rounded-3xl border border-[#465522] space-y-3">
+                  <div className="text-3xl animate-bounce">📱</div>
+                  <h4 className="text-sm font-black text-[#FFD6E8]">Sincronizando tus chats...</h4>
+                  <p className="text-xs text-[#A3B880] max-w-xs mx-auto">
+                    WhatsApp Web se está conectando con tu móvil y descargando tus conversaciones recientes.
+                  </p>
+                  <button 
+                    onClick={fetchContacts}
+                    disabled={loadingContacts}
+                    className="px-5 py-2.5 bg-gradient-to-r from-[#FF6B00] to-[#FF2E93] text-white text-xs font-black rounded-xl shadow-lg shadow-pink-500/25 hover:from-[#ff8533] hover:to-[#ff48a1] transition-all cursor-pointer inline-flex items-center gap-2"
+                  >
+                    <span className={loadingContacts ? "animate-spin" : ""}>🔄</span>
+                    {loadingContacts ? 'Cargando...' : 'Actualizar Chats'}
+                  </button>
+                </div>
               ) : (
                 <div className="grid gap-2 max-h-[70vh] overflow-y-auto pr-1 custom-scrollbar">
                   {contacts

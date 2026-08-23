@@ -278,8 +278,11 @@ async function refreshContactMaps() {
             }
         }
 
-        const contacts = await client.getContacts();
-        for (const c of contacts) {
+        let contacts = [];
+        try {
+            contacts = await client.getContacts();
+        } catch (e) {}
+        for (const c of (contacts || [])) {
             if (c.id && c.id._serialized) {
                 const serialized = c.id._serialized;
                 const userDigits = (c.id.user || serialized.split('@')[0] || '').replace(/\D/g, '');
@@ -784,12 +787,67 @@ app.get('/api/contacts', requireAuth, async (req, res) => {
                 });
             }
         } catch (e) {
-            console.warn("No se pudieron obtener chats activos:", e.message);
+            console.warn("No se pudieron obtener chats activos con client.getChats():", e.message);
         }
 
-        const contacts = await client.getContacts();
+        // Fallback directo a window.Store si getChats vino vacío
+        if ((!activeChats || activeChats.length === 0) && client.pupPage && !client.pupPage.isClosed()) {
+            try {
+                const storeChats = await client.pupPage.evaluate(() => {
+                    try {
+                        const ChatStore = window.Store?.Chat || (window.require ? window.require('WAWebCollections')?.Chat : null);
+                        if (ChatStore && ChatStore.getModelsArray) {
+                            return ChatStore.getModelsArray().map(c => ({
+                                id: { _serialized: c.id?._serialized || String(c.id) },
+                                name: c.name || c.formattedTitle || '',
+                                isGroup: !!c.isGroup,
+                                pinned: !!c.pinned,
+                                timestamp: c.t || 0
+                            }));
+                        }
+                    } catch (err) {}
+                    return [];
+                });
+                if (storeChats && storeChats.length > 0) {
+                    activeChats = storeChats;
+                }
+            } catch (err) {}
+        }
+
+        let contacts = [];
+        try {
+            contacts = await client.getContacts();
+        } catch (e) {
+            console.warn("No se pudieron obtener contactos con client.getContacts():", e.message);
+        }
+
+        // Fallback directo a window.Store para contactos
+        if ((!contacts || contacts.length === 0) && client.pupPage && !client.pupPage.isClosed()) {
+            try {
+                const storeContacts = await client.pupPage.evaluate(() => {
+                    try {
+                        const ContactStore = window.Store?.Contact || (window.require ? window.require('WAWebCollections')?.Contact : null);
+                        if (ContactStore && ContactStore.getModelsArray) {
+                            return ContactStore.getModelsArray().map(c => ({
+                                id: { _serialized: c.id?._serialized || String(c.id), user: c.id?.user || '' },
+                                name: c.name || '',
+                                pushname: c.pushname || '',
+                                number: c.number || '',
+                                isGroup: !!c.isGroup,
+                                isMe: !!c.isMe
+                            }));
+                        }
+                    } catch (err) {}
+                    return [];
+                });
+                if (storeContacts && storeContacts.length > 0) {
+                    contacts = storeContacts;
+                }
+            } catch (err) {}
+        }
+
         const contactMap = new Map();
-        for (const c of contacts) {
+        for (const c of (contacts || [])) {
             if (c.id && c.id._serialized) {
                 contactMap.set(c.id._serialized, c);
             }
