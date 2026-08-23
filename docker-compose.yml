@@ -1,0 +1,17 @@
+services:
+  guasapp-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: guasapp-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    volumes:
+      - ./backend_data/wwebjs_auth:/app/.wwebjs_auth
+      - ./backend_data/wwebjs_cache:/app/.wwebjs_cache

@@ -118,9 +118,13 @@ async function saveMessageToHistory(contactId, messageData) {
 
 // Configuración robusta de Puppeteer
 const chromePaths = [
+    process.env.PUPPETEER_EXECUTABLE_PATH,
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/google-chrome-stable',
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
-];
+].filter(Boolean);
 let foundChromePath = chromePaths.find(p => fs.existsSync(p));
 
 const puppeteerConfig = {

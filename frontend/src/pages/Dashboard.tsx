@@ -4,7 +4,7 @@ import QRCode from 'react-qr-code';
 import { io, Socket } from 'socket.io-client';
 import html2canvas from 'html2canvas';
 
-const BACKEND_URL = `http://${window.location.hostname}:3000`;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3000' : `${window.location.protocol}//${window.location.hostname}:3000`);
 
 const defaultPersonas = [
   { id: 'absurdo', name: 'Intelectual Absurdo', desc: '🧐 Pedante supremo, latinajos y palabras rimbombantes sin sentido.' },
@@ -475,7 +475,7 @@ export default function Dashboard({ session }: { session: any }) {
           </div>
         ) : (
           <>
-            <div className="w-full md:w-[380px] flex-shrink-0 flex flex-col gap-3">
+            <div className={`${selectedContact ? 'hidden md:flex' : 'flex'} w-full md:w-[380px] flex-shrink-0 flex-col gap-3`}>
               {/* Barra de pestañas */}
               <div className="bg-[#222B11]/95 backdrop-blur-xl p-1 rounded-2xl border border-[#465522] flex shadow-sm">
                 <button 
@@ -588,12 +588,19 @@ export default function Dashboard({ session }: { session: any }) {
               )}
             </div>
 
-            <div className="flex-1 flex flex-col h-[74vh]">
+            <div className={`${selectedContact ? 'flex' : 'hidden md:flex'} flex-1 flex-col h-[74vh]`}>
               {selectedContact ? (
                 <div className="bg-[#222B11]/95 backdrop-blur-xl border-2 border-[#465522] rounded-3xl overflow-hidden flex flex-col h-full shadow-2xl">
                   {/* Cabecera del Contacto */}
                   <div className="p-3.5 border-b border-[#465522] flex justify-between items-center bg-[#18200B]/90 gap-2">
                      <div className="flex items-center gap-2.5 truncate">
+                       <button 
+                         onClick={() => setSelectedContact(null)} 
+                         className="md:hidden px-2.5 py-1 bg-[#18200B] border border-[#465522] text-[#FF6B00] rounded-xl text-xs font-bold hover:text-white cursor-pointer"
+                         title="Volver a la lista de chats"
+                       >
+                         ← Volver
+                       </button>
                        <span className="text-xl bg-[#222B11] p-1 rounded-xl border border-[#465522]">{selectedContact.avatar}</span>
                        <div className="truncate">
                          <h3 className="text-[#FFD6E8] font-black text-sm truncate leading-tight">{selectedContact.name}</h3>
