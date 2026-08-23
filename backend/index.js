@@ -1020,6 +1020,45 @@ app.get('/api/contacts', requireAuth, async (req, res) => {
     }
 });
 
+// Añadir contacto manualmente por número de teléfono
+app.post('/api/contacts/manual', requireAuth, async (req, res) => {
+    try {
+        const { phone, name } = req.body;
+        if (!phone) return res.status(400).json({ error: 'Falta el número de teléfono' });
+
+        let rawDigits = String(phone).replace(/\D/g, '');
+        if (rawDigits.length === 9) rawDigits = `34${rawDigits}`; // España default
+        if (rawDigits.length < 9) return res.status(400).json({ error: 'Número de teléfono no válido' });
+
+        const serialized = `${rawDigits}@c.us`;
+        const formattedPhone = formatPhoneNumber(rawDigits);
+        const contactName = name ? name.trim() : (formattedPhone || `Contacto ${rawDigits}`);
+
+        // Guardar en favoritos en Supabase automáticamente
+        try {
+            await supabaseAdmin
+                .from('favorites')
+                .upsert({ user_id: req.user.id, contact_id: serialized });
+        } catch (e) {}
+
+        res.json({
+            success: true,
+            contact: {
+                id: serialized,
+                name: contactName,
+                number: formattedPhone,
+                isGroup: false,
+                favorite: true,
+                bot: { active: false, persona: '' },
+                pinned: false,
+                timestamp: Date.now()
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Guardar configuración de IA en Supabase
 app.post('/api/config', requireAuth, async (req, res) => {
     try {

@@ -41,6 +41,11 @@ export default function Dashboard({ session }: { session: any }) {
   const [newCustomAvatar, setNewCustomAvatar] = useState('🎭');
   const [savingCustom, setSavingCustom] = useState(false);
 
+  const [showAddContactModal, setShowAddContactModal] = useState(false);
+  const [manualPhone, setManualPhone] = useState('');
+  const [manualName, setManualName] = useState('');
+  const [savingManual, setSavingManual] = useState(false);
+
   const [, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [aiConfig, setAiConfig] = useState(() => {
@@ -320,6 +325,38 @@ export default function Dashboard({ session }: { session: any }) {
     }
   };
 
+  const handleCreateManualContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualPhone.trim()) return;
+    setSavingManual(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/contacts/manual`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ phone: manualPhone, name: manualName })
+      });
+      const data = await res.json();
+      if (data.success && data.contact) {
+        const newContact = {
+          ...data.contact,
+          persona: 'Ninguna',
+          active: false,
+          avatar: '👤'
+        };
+        setContacts(prev => [newContact, ...prev.filter(c => c.id !== newContact.id)]);
+        setSelectedContact(newContact);
+        localStorage.setItem('guasap_last_contact', newContact.id);
+        setShowAddContactModal(false);
+        setManualPhone('');
+        setManualName('');
+      }
+    } catch (err) {
+      console.error("Error al añadir contacto manual:", err);
+    } finally {
+      setSavingManual(false);
+    }
+  };
+
   const handleExportViralScreenshot = async () => {
     if (!chatContainerRef.current) return;
     setExportingScreenshot(true);
@@ -505,7 +542,7 @@ export default function Dashboard({ session }: { session: any }) {
                 </button>
               </div>
               
-              {/* Buscador */}
+              {/* Buscador y Añadir */}
               <div className="flex items-center gap-2 w-full">
                 <div className="relative flex-1">
                   <input
@@ -531,6 +568,14 @@ export default function Dashboard({ session }: { session: any }) {
                 >
                   ↻
                 </button>
+                <button 
+                  onClick={() => setShowAddContactModal(true)} 
+                  className="px-3 py-2.5 bg-gradient-to-r from-[#FF6B00] to-[#FF2E93] text-white rounded-2xl text-xs font-black shadow-md shadow-pink-500/20 hover:from-[#ff8533] hover:to-[#ff48a1] transition-all flex items-center gap-1 cursor-pointer flex-shrink-0"
+                  title="Añadir contacto por teléfono"
+                >
+                  <span>➕</span>
+                  <span className="hidden sm:inline">Nuevo</span>
+                </button>
               </div>
               
               {/* Lista de Contactos */}
@@ -540,20 +585,30 @@ export default function Dashboard({ session }: { session: any }) {
                    Extrayendo chats tácticos de WhatsApp...
                  </div>
               ) : contacts.length === 0 ? (
-                <div className="text-center py-10 px-4 bg-[#222B11]/80 rounded-3xl border border-[#465522] space-y-3">
+                <div className="text-center py-8 px-4 bg-[#222B11]/80 rounded-3xl border border-[#465522] space-y-4">
                   <div className="text-3xl animate-bounce">📱</div>
-                  <h4 className="text-sm font-black text-[#FFD6E8]">Sincronizando tus chats...</h4>
-                  <p className="text-xs text-[#A3B880] max-w-xs mx-auto">
-                    WhatsApp Web se está conectando con tu móvil y descargando tus conversaciones recientes.
-                  </p>
-                  <button 
-                    onClick={fetchContacts}
-                    disabled={loadingContacts}
-                    className="px-5 py-2.5 bg-gradient-to-r from-[#FF6B00] to-[#FF2E93] text-white text-xs font-black rounded-xl shadow-lg shadow-pink-500/25 hover:from-[#ff8533] hover:to-[#ff48a1] transition-all cursor-pointer inline-flex items-center gap-2"
-                  >
-                    <span className={loadingContacts ? "animate-spin" : ""}>🔄</span>
-                    {loadingContacts ? 'Cargando...' : 'Actualizar Chats'}
-                  </button>
+                  <div>
+                    <h4 className="text-sm font-black text-[#FFD6E8] mb-1">Sincronizando tus chats...</h4>
+                    <p className="text-xs text-[#A3B880] max-w-xs mx-auto">
+                      WhatsApp Web se está conectando con tu móvil. Puedes esperar unos segundos o añadir a tu amigo por su número directamente para empezar ya.
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <button 
+                      onClick={fetchContacts}
+                      disabled={loadingContacts}
+                      className="px-4 py-2.5 bg-[#18200B] hover:bg-[#2F3D18] text-[#FFD6E8] border border-[#465522] text-xs font-bold rounded-xl transition-all cursor-pointer inline-flex items-center justify-center gap-1.5"
+                    >
+                      <span className={loadingContacts ? "animate-spin" : ""}>🔄</span>
+                      {loadingContacts ? 'Cargando...' : 'Reintentar'}
+                    </button>
+                    <button 
+                      onClick={() => setShowAddContactModal(true)}
+                      className="px-4 py-2.5 bg-gradient-to-r from-[#FF6B00] to-[#FF2E93] text-white text-xs font-black rounded-xl shadow-lg shadow-pink-500/25 hover:from-[#ff8533] hover:to-[#ff48a1] transition-all cursor-pointer inline-flex items-center justify-center gap-1.5"
+                    >
+                      <span>➕</span> Añadir por Número
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="grid gap-2 max-h-[70vh] overflow-y-auto pr-1 custom-scrollbar">
@@ -859,6 +914,60 @@ export default function Dashboard({ session }: { session: any }) {
                 <button 
                   type="button" 
                   onClick={() => setShowCustomModal(false)} 
+                  className="px-5 bg-[#18200B] hover:bg-[#2F3D18] text-[#FFD6E8] border border-[#465522] font-bold rounded-xl transition-colors text-xs cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Añadir Contacto Directo */}
+      {showAddContactModal && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+          <div className="bg-[#222B11] border-2 border-[#FF6B00] w-full max-w-md rounded-3xl p-6 shadow-2xl shadow-pink-500/20">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">📱</span>
+              <h3 className="text-lg font-black text-[#FFD6E8] tracking-tight">Añadir Contacto por Número</h3>
+            </div>
+            
+            <form onSubmit={handleCreateManualContact} className="space-y-4">
+              <div>
+                <label className="text-xs text-[#FFC4A8] block mb-1 font-bold">Número de Teléfono o WhatsApp</label>
+                <input 
+                  type="text"
+                  placeholder="Ej: 612345678 o +34 612 34 56 78"
+                  value={manualPhone}
+                  onChange={e => setManualPhone(e.target.value)}
+                  className="w-full bg-[#18200B] border border-[#465522] focus:border-[#FF6B00] text-[#FFD6E8] rounded-xl p-2.5 text-xs focus:outline-none font-mono"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#FFC4A8] block mb-1 font-bold">Nombre o Apodo de tu Amigo (Opcional)</label>
+                <input 
+                  type="text"
+                  placeholder="Ej: Pedro, Cuñado Paco, Jefa..."
+                  value={manualName}
+                  onChange={e => setManualName(e.target.value)}
+                  className="w-full bg-[#18200B] border border-[#465522] focus:border-[#FF6B00] text-[#FFD6E8] rounded-xl p-2.5 text-xs focus:outline-none"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button 
+                  type="submit" 
+                  disabled={savingManual}
+                  className="flex-1 bg-gradient-to-r from-[#FF6B00] to-[#FF2E93] hover:from-[#ff8533] hover:to-[#ff48a1] text-white font-black py-2.5 rounded-xl transition-all text-xs shadow-lg shadow-pink-500/30 cursor-pointer"
+                >
+                  {savingManual ? 'Añadiendo...' : 'Añadir y Configurar Bot'}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setShowAddContactModal(false)} 
                   className="px-5 bg-[#18200B] hover:bg-[#2F3D18] text-[#FFD6E8] border border-[#465522] font-bold rounded-xl transition-colors text-xs cursor-pointer"
                 >
                   Cancelar
