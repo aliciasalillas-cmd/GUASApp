@@ -761,57 +761,76 @@ app.get('/api/contacts', requireAuth, async (req, res) => {
     }
     
     try {
-        await refreshContactMaps();
+        try {
+            await refreshContactMaps();
+        } catch (e) {
+            console.warn("Advertencia en refreshContactMaps:", e.message);
+        }
 
-        const [{ data: userFavs }, { data: userBots }] = await Promise.all([
-            supabaseAdmin.from('favorites').select('contact_id').eq('user_id', req.user.id),
-            supabaseAdmin.from('bot_configs').select('contact_id, persona, active').eq('user_id', req.user.id)
-        ]);
+        let userFavs = [], userBots = [];
+        try {
+            const [favRes, botRes] = await Promise.all([
+                supabaseAdmin.from('favorites').select('contact_id').eq('user_id', req.user.id),
+                supabaseAdmin.from('bot_configs').select('contact_id, persona, active').eq('user_id', req.user.id)
+            ]);
+            userFavs = favRes?.data || [];
+            userBots = botRes?.data || [];
+        } catch (e) {
+            console.warn("Advertencia al consultar Supabase en /api/contacts:", e.message);
+        }
 
         const favSet = new Set((userFavs || []).map(f => f.contact_id));
         const botMap = new Map();
         (userBots || []).forEach(b => botMap.set(b.contact_id, { active: b.active, persona: b.persona }));
 
         let activeChats = [];
-        try {
-            activeChats = await client.getChats();
-            if (activeChats && activeChats.length > 0) {
-                activeChats.sort((a, b) => {
-                    const aPinned = a.pinned ? 1 : 0;
-                    const bPinned = b.pinned ? 1 : 0;
-                    if (aPinned !== bPinned) return bPinned - aPinned;
-
-                    const aTime = a.timestamp || a.lastMessage?.timestamp || 0;
-                    const bTime = b.timestamp || b.lastMessage?.timestamp || 0;
-                    return bTime - aTime;
-                });
-            }
-        } catch (e) {
-            console.warn("No se pudieron obtener chats activos con client.getChats():", e.message);
-        }
-
-        // Fallback directo a window.Store si getChats vino vacío
-        if ((!activeChats || activeChats.length === 0) && client.pupPage && !client.pupPage.isClosed()) {
+        for (let attempt = 0; attempt < 3; attempt++) {
             try {
-                const storeChats = await client.pupPage.evaluate(() => {
-                    try {
-                        const ChatStore = window.Store?.Chat || (window.require ? window.require('WAWebCollections')?.Chat : null);
-                        if (ChatStore && ChatStore.getModelsArray) {
-                            return ChatStore.getModelsArray().map(c => ({
-                                id: { _serialized: c.id?._serialized || String(c.id) },
-                                name: c.name || c.formattedTitle || '',
-                                isGroup: !!c.isGroup,
-                                pinned: !!c.pinned,
-                                timestamp: c.t || 0
-                            }));
-                        }
-                    } catch (err) {}
-                    return [];
-                });
-                if (storeChats && storeChats.length > 0) {
-                    activeChats = storeChats;
+                activeChats = await client.getChats();
+                if (activeChats && activeChats.length > 0) {
+                    activeChats.sort((a, b) => {
+                        const aPinned = a.pinned ? 1 : 0;
+                        const bPinned = b.pinned ? 1 : 0;
+                        if (aPinned !== bPinned) return bPinned - aPinned;
+
+                        const aTime = a.timestamp || a.lastMessage?.timestamp || 0;
+                        const bTime = b.timestamp || b.lastMessage?.timestamp || 0;
+                        return bTime - aTime;
+                    });
+                    break;
                 }
-            } catch (err) {}
+            } catch (e) {
+                console.warn(`Intento ${attempt + 1} getChats:`, e.message);
+            }
+
+            // Fallback directo a window.Store si getChats vino vacío
+            if (client.pupPage && !client.pupPage.isClosed()) {
+                try {
+                    const storeChats = await client.pupPage.evaluate(() => {
+                        try {
+                            const ChatStore = window.Store?.Chat || (window.require ? window.require('WAWebCollections')?.Chat : null);
+                            if (ChatStore && ChatStore.getModelsArray) {
+                                return ChatStore.getModelsArray().map(c => ({
+                                    id: { _serialized: c.id?._serialized || String(c.id) },
+                                    name: c.name || c.formattedTitle || '',
+                                    isGroup: !!c.isGroup,
+                                    pinned: !!c.pinned,
+                                    timestamp: c.t || 0
+                                }));
+                            }
+                        } catch (err) {}
+                        return [];
+                    });
+                    if (storeChats && storeChats.length > 0) {
+                        activeChats = storeChats;
+                        break;
+                    }
+                } catch (err) {}
+            }
+
+            if (attempt < 2) {
+                await new Promise(r => setTimeout(r, 1000));
+            }
         }
 
         let contacts = [];
