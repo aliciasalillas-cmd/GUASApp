@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GUASApp - Operación Troleo Móvil</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Fredoka & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons & Confetti -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bgOlive: '#4E612B',
+            bgOliveLight: '#596E32',
+            militar: {
+              DEFAULT: '#263013',
+              dark: '#1C240E',
+              darker: '#141A09',
+              card: '#222B11',
+              border: '#465522'
+            },
+            neon: {
+              orange: '#FF6B00',
+              orangeGlow: '#FF8833',
+              pink: '#FF2E93',
+              pinkLight: '#FF60AE',
+              pinkDeep: '#D80064'
+            }
+          },
+          fontFamily: {
+            fredoka: ['Fredoka', 'cursive', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #1a220c;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    @keyframes pulseNeonPinkOrange {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 46, 147, 0.6), 0 0 35px rgba(255, 107, 0, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 35px rgba(255, 46, 147, 0.9), 0 0 55px rgba(255, 107, 0, 0.7);
+      }
+    }
+
+    .btn-neon-glow {
+      animation: pulseNeonPinkOrange 2.2s infinite ease-in-out;
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1C240E;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #FF6B00;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 flex items-center justify-center p-0 sm:p-4 select-none">
+
+  <!-- Contenedor móvil Smartphone (Fondo Verde Más Clarito #4E612B) -->
+  <main class="w-full max-w-[430px] min-h-screen sm:min-h-[880px] bg-[#4E612B] sm:rounded-[38px] shadow-[0_25px_60px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col justify-between border-0 sm:border-4 border-[#688039] relative">
+
+    <!-- Notificación Toast dinámica -->
+    <div id="toast" class="hidden absolute top-20 left-4 right-4 z-50 bg-[#1C240E] text-[#FF6B00] border-2 border-[#FF6B00] px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+      <span class="text-xl">💣</span>
+      <p id="toastMessage" class="text-xs font-bold text-[#FFD6E8] flex-1 leading-snug">¡Guasa lanzada!</p>
+    </div>
+
+    <!-- 1. HEADER -->
+    <header class="pt-5 px-4 pb-3 bg-[#263013] border-b-2 border-[#465522] flex items-center justify-between shadow-md z-20">
+      <div class="flex items-center gap-2.5">
+        <img 
+          src="/logo.jpg?v=4" 
+          alt="GUASAPAPP Logo" 
+          class="w-12 h-12 rounded-2xl object-cover border-2 border-[#FF6B00] shadow-lg shrink-0" 
+        />
+
+        <div>
+          <h1 class="text-2xl font-black tracking-wider font-fredoka flex items-center leading-none drop-shadow-md">
+            <span class="text-[#FF6B00]">GUASA</span><span class="text-[#FFE600]">-APP</span>
+          </h1>
+          <div class="mt-1">
+            <span class="text-[9px] font-black uppercase tracking-wider text-[#1C240E] bg-gradient-to-r from-[#FF6B00] to-[#FF2E93] text-white px-2.5 py-0.5 rounded-full shadow-sm">
+              ★ CORONEL RISITAS ★
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="toggleSettingsModal()" class="w-10 h-10 rounded-2xl bg-[#222B11] border border-[#FF6B00]/40 flex items-center justify-center text-[#FF6B00] hover:bg-[#FF6B00] hover:text-[#1C240E] transition-colors shadow cursor-pointer">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+      </button>
+    </header>
+
+    <!-- 2. CONTENIDO PRINCIPAL -->
+    <div class="p-4 space-y-4 flex-1 overflow-y-auto pb-28">
+
+      <!-- HERO SECTION: Tarjeta Verde Militar con Acentos Naranja y Rosa -->
+      <section class="bg-gradient-to-br from-[#263013] to-[#1C240E] border-2 border-[#FF6B00] rounded-3xl p-5 shadow-2xl relative overflow-hidden">
+        <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-[#FF2E93]/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="flex items-center justify-between mb-2 relative z-10">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-[#FF6B00] text-[#1C240E] tracking-wider uppercase shadow-md">
+            <i data-lucide="zap" class="w-3.5 h-3.5 fill-[#1C240E]"></i> NIVEL DE GUASA
+          </span>
+          <span class="text-xs font-bold text-[#FF60AE] flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#FF2E93] animate-ping"></span> RADAR ACTIVO
+          </span>
+        </div>
+
+        <div class="my-3 flex items-end justify-between relative z-10">
+          <div>
+            <div id="counterValue" class="text-5xl font-black font-fredoka text-[#FFD6E8] tracking-tight drop-shadow-lg flex items-baseline gap-1">
+              1,482
+              <span class="text-base text-[#FF6B00] font-normal">pts</span>
+            </div>
+            <p class="text-xs text-[#FFC4A8] font-semibold mt-0.5">
+              Víctimas Trolleadas en Combate
+            </p>
+          </div>
+
+          <div class="text-right">
+            <div id="percentageValue" class="text-3xl font-black text-[#FF2E93] font-fredoka drop-shadow">
+              98.4%
+            </div>
+            <p class="text-[10px] text-[#FF6B00] font-bold uppercase tracking-wider">
+              Carga Atómica
+            </p>
+          </div>
+        </div>
+
+        <!-- Barra de Progreso Naranja a Rosa -->
+        <div class="w-full bg-[#141A09] rounded-full h-3.5 p-0.5 border border-[#465522] shadow-inner relative z-10">
+          <div id="progressBar" class="bg-gradient-to-r from-[#FF6B00] via-[#FF5500] to-[#FF2E93] h-full rounded-full w-[98%] transition-all duration-300 shadow-md"></div>
+        </div>
+
+        <div class="flex items-center justify-between text-[10px] font-semibold text-[#E2C7D4] mt-2 relative z-10">
+          <span class="text-[#FF8833]">Defcon 5 (Risitas)</span>
+          <span class="text-[#FF2E93] font-bold">Defcon 1 (Troleo Máximo)</span>
+        </div>
+      </section>
+
+      <!-- 3. BOTÓN PRINCIPAL (CTA GIGANTE NEÓN ROSA / NARANJA) -->
+      <div class="py-1">
+        <button id="ctaBtn" onclick="lanzarGuasaAtomica()" class="w-full py-5 px-6 rounded-3xl bg-gradient-to-r from-[#FF2E93] via-[#FF6B00] to-[#FF2E93] hover:from-[#ff48a1] hover:to-[#ff8533] active:scale-95 text-white font-black text-xl tracking-wider shadow-[0_12px_30px_rgba(255,46,147,0.6)] border-3 border-[#FF6B00] flex items-center justify-center gap-3 cursor-pointer transition-all duration-150 btn-neon-glow">
+          <i data-lucide="bomb" class="w-7 h-7 text-[#FFE5D9] animate-bounce shrink-0"></i>
+          <span class="font-fredoka text-2xl uppercase tracking-wider drop-shadow-md text-white">
+            ¡LANZAR GUASA ATÓMICA!
+          </span>
+          <i data-lucide="sparkles" class="w-6 h-6 text-[#FFE5D9] shrink-0"></i>
+        </button>
+      </div>
+
+      <!-- 4. TARJETAS SECUNDARIAS (FONDO VERDE MILITAR #222B11) -->
+      <div class="space-y-3.5">
+        
+        <!-- Tarjeta 1: Generador de Excusas Militares -->
+        <article class="bg-[#222B11] border border-[#465522] rounded-3xl p-4 shadow-xl hover:border-[#FF6B00] transition-colors relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2.5">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-2xl bg-[#1C240E] text-[#FF6B00] flex items-center justify-center border border-[#465522] shadow-inner">
+                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="font-bold text-[#FFD6E8] text-sm">Excusa Militar Clasificada</h2>
+                <p class="text-[10px] text-[#FFC4A8]">Para librarte de cualquier plan</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="copiarExcusa()" class="p-2 rounded-xl bg-[#1C240E] hover:bg-[#2F3D18] text-[#FF6B00] text-xs font-bold transition-all border border-[#465522] cursor-pointer" title="Copiar">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+              <button onclick="cambiarExcusa()" class="px-3 py-1.5 rounded-xl bg-[#FF6B00] hover:bg-[#FF8833] text-[#1C240E] text-xs font-extrabold transition-all shadow flex items-center gap-1 cursor-pointer">
+                <i data-lucide="shuffle" class="w-3.5 h-3.5"></i>
+                <span>Otra</span>
+              </button>
+            </div>
+          </div>
+
+          <p id="excusaTexto" class="text-xs text-[#FFE5D9] italic bg-[#1C240E]/90 p-3 rounded-2xl border border-[#3A481B] leading-relaxed shadow-inner">
+            "Mi perro hackeó el satélite del Pentágono y se comió las coordenadas de la reunión."
+          </p>
+        </article>
+
+        <!-- Tarjeta 2: Bomba de Audios Inconfesables -->
+        <article class="bg-[#222B11] border border-[#465522] rounded-3xl p-4 shadow-xl">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-2xl bg-[#1C240E] text-[#FF2E93] flex items-center justify-center border border-[#465522] shadow-inner">
+                <i data-lucide="volume-2" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="font-bold text-[#FFD6E8] text-sm">Bomba de Audios Inconfesables</h2>
+                <p class="text-[10px] text-[#FFC4A8]">Detonadores de risas instantáneas</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold bg-[#FF2E93]/20 text-[#FF60AE] px-2 py-0.5 rounded-full border border-[#FF2E93]/40">
+              AUDIO FX
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="reproducirSonido('fart')" class="bg-[#1C240E] hover:bg-[#FF6B00] hover:text-[#1C240E] text-[#FFD6E8] p-2.5 rounded-2xl text-xs font-bold border border-[#3A481B] transition-all flex flex-col items-start gap-0.5 group active:scale-95 cursor-pointer">
+              <span class="font-bold text-[#FFD6E8] group-hover:text-[#1C240E]">💨 Pedo Táctico</span>
+              <span class="text-[10px] text-[#FFC4A8] group-hover:text-[#1C240E]">Silencioso y letal</span>
+            </button>
+            <button onclick="reproducirSonido('airhorn')" class="bg-[#1C240E] hover:bg-[#FF2E93] hover:text-white text-[#FFD6E8] p-2.5 rounded-2xl text-xs font-bold border border-[#3A481B] transition-all flex flex-col items-start gap-0.5 group active:scale-95 cursor-pointer">
+              <span class="font-bold text-[#FFD6E8] group-hover:text-white">🎺 Bocinazo Épico</span>
+              <span class="text-[10px] text-[#FFC4A8] group-hover:text-white">Despierta vecinos</span>
+            </button>
+            <button onclick="reproducirSonido('laser')" class="bg-[#1C240E] hover:bg-[#FF6B00] hover:text-[#1C240E] text-[#FFD6E8] p-2.5 rounded-2xl text-xs font-bold border border-[#3A481B] transition-all flex flex-col items-start gap-0.5 group active:scale-95 cursor-pointer">
+              <span class="font-bold text-[#FFD6E8] group-hover:text-[#1C240E]">🔫 Láser Risas</span>
+              <span class="text-[10px] text-[#FFC4A8] group-hover:text-[#1C240E]">Desintegra seriedad</span>
+            </button>
+            <button onclick="reproducirSonido('boing')" class="bg-[#1C240E] hover:bg-[#FF2E93] hover:text-white text-[#FFD6E8] p-2.5 rounded-2xl text-xs font-bold border border-[#3A481B] transition-all flex flex-col items-start gap-0.5 group active:scale-95 cursor-pointer">
+              <span class="font-bold text-[#FFD6E8] group-hover:text-white">🎪 Boing Dibujos</span>
+              <span class="text-[10px] text-[#FFC4A8] group-hover:text-white">Carcajada pura</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- Tarjeta 3: Radar de Cuñados en 5km -->
+        <article class="bg-[#222B11] border border-[#465522] rounded-3xl p-4 shadow-xl flex items-center justify-between hover:border-[#FF2E93] transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#1C240E] flex items-center justify-center text-[#FF2E93] border border-[#3A481B] relative shadow-inner">
+              <i data-lucide="radio" class="w-5 h-5"></i>
+              <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#FF2E93] animate-ping"></span>
+            </div>
+            <div>
+              <h2 class="font-bold text-[#FFD6E8] text-sm">Radar de Cuñados Táctico</h2>
+              <p class="text-xs text-[#FFC4A8]">3 detectados explicando freidoras de aire</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-black text-[#FF6B00] bg-[#1C240E] px-2.5 py-1 rounded-full border border-[#465522] shadow-sm">
+            PELIGRO ⚠️
+          </span>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- 5. BOTTOM BAR FLOTANTE (NARANJA Y ROSA) -->
+    <nav class="absolute bottom-3 left-4 right-4 bg-[#1C240E]/95 backdrop-blur-lg border-2 border-[#FF6B00] rounded-3xl p-1.5 flex items-center justify-around shadow-[0_10px_25px_rgba(0,0,0,0.6)] z-30">
+      <button onclick="seleccionarTab('bromas', this)" class="nav-btn flex flex-col items-center py-1.5 px-5 rounded-2xl font-black transition-all bg-gradient-to-r from-[#FF6B00] to-[#FF2E93] text-white shadow-md scale-105 cursor-pointer">
+        <i data-lucide="bomb" class="w-5 h-5"></i>
+        <span class="text-[10px] uppercase font-bold tracking-tight mt-0.5">Bromas</span>
+      </button>
+
+      <button onclick="seleccionarTab('radar', this)" class="nav-btn flex flex-col items-center py-1.5 px-5 rounded-2xl font-black transition-all text-[#FFC4A8] hover:text-[#FF2E93] cursor-pointer">
+        <i data-lucide="radio" class="w-5 h-5"></i>
+        <span class="text-[10px] uppercase font-bold tracking-tight mt-0.5">Radar</span>
+      </button>
+
+      <button onclick="seleccionarTab('rango', this)" class="nav-btn flex flex-col items-center py-1.5 px-5 rounded-2xl font-black transition-all text-[#FFC4A8] hover:text-[#FF6B00] cursor-pointer">
+        <i data-lucide="trophy" class="w-5 h-5"></i>
+        <span class="text-[10px] uppercase font-bold tracking-tight mt-0.5">Rango</span>
+      </button>
+    </nav>
+
+  </main>
+
+  <!-- Lógica y Efectos de Sonido Procedurales -->
+  <script>
+    lucide.createIcons();
+
+    let victimCount = 1482;
+    let gaugeLevel = 98.4;
+    const excusas = [
+      '"Mi perro hackeó el satélite del Pentágono y se comió las coordenadas de la reunión."',
+      '"Se declaró toque de queda en mi cama por orden directa del Coronel Somnolencia."',
+      '"Fui interceptado por un escuadrón de cuñados con diapositivas sobre criptomonedas."',
+      '"Misión fallida: mi abuela me obligó a comer tres raciones de croquetas tácticas."',
+      '"El radar detectó una tormenta de pereza de categoría 5 sobre mi código postal."',
+      '"Mi gato asumió el mando supremo del hogar e impuso la ley marcial en el sofá."'
+    ];
+    let excuseIdx = 0;
+
+    let audioCtx = null;
+    function getAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function reproducirSonido(tipo) {
+      try {
+        const ctx = getAudio();
+        const now = ctx.currentTime;
+
+        if (tipo === 'fart') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(110, now);
+          osc.frequency.linearRampToValueAtTime(55, now + 0.25);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.3);
+          mostrarToast("💨 ¡Pedo táctico silencioso pero letal!");
+        } else if (tipo === 'airhorn') {
+          [311.13, 466.16, 622.25].forEach(freq => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.35);
+          });
+          mostrarToast("🎺 ¡Bocinazo destructor de siestas!");
+        } else if (tipo === 'laser') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(1200, now);
+          osc.frequency.exponentialRampToValueAtTime(120, now + 0.2);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.2);
+          mostrarToast("🔫 ¡Rayo troleador activado!");
+        } else if (tipo === 'boing') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.exponentialRampToValueAtTime(650, now + 0.15);
+          osc.frequency.exponentialRampToValueAtTime(220, now + 0.35);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.35);
+          mostrarToast("🎪 ¡Boing cómico disparado!");
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    function lanzarGuasaAtomica() {
+      victimCount += Math.floor(Math.random() * 6) + 1;
+      gaugeLevel = Math.min(100, (gaugeLevel + 0.2));
+      
+      document.getElementById('counterValue').innerHTML = victimCount.toLocaleString() + ' <span class="text-base text-[#FF6B00] font-normal">pts</span>';
+      document.getElementById('percentageValue').innerText = gaugeLevel.toFixed(1) + '%';
+      document.getElementById('progressBar').style.width = gaugeLevel + '%';
+
+      reproducirSonido('airhorn');
+
+      try {
+        confetti({
+          particleCount: 85,
+          spread: 75,
+          origin: { y: 0.6 },
+          colors: ['#FF6B00', '#FF2E93', '#FF8833', '#FF60AE', '#10B981']
+        });
+      } catch(e) {}
+
+      const alertas = [
+        "💣 ¡MISIL DE MEMES LANZADO AL GRUPO DE LA FAMILIA!",
+        "🚨 ¡ALERTA! Cuñado neutralizado con sticker demoledor.",
+        "🔥 ¡NIVEL DE GUASA EN MÁXIMO HISTÓRICO!",
+        "📡 ¡AUDIO DE GEMIDOS FALSO ENVIADO AL GRUPO DE VECINOS!",
+        "🎯 ¡IMPACTO CONFIRMADO! Víctima riéndose en el metro."
+      ];
+      mostrarToast(alertas[Math.floor(Math.random() * alertas.length)]);
+    }
+
+    function cambiarExcusa() {
+      reproducirSonido('boing');
+      excuseIdx = (excuseIdx + 1) % excusas.length;
+      document.getElementById('excusaTexto').innerText = excusas[excuseIdx];
+    }
+
+    function copiarExcusa() {
+      const txt = document.getElementById('excusaTexto').innerText;
+      navigator.clipboard.writeText(txt);
+      mostrarToast("📋 ¡Excusa táctica copiada al portapapeles!");
+    }
+
+    let toastTimer = null;
+    function mostrarToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').innerText = msg;
+      toast.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2800);
+    }
+
+    function toggleSettingsModal() {
+      alert("⚙️ PANEL DE CONTROL MILITAR:\n- Volumen de Risas: 100%\n- Modo Sigilo en Oficina: ACTIVADO\n- Auto-destrucción de Stickers: 24h");
+    }
+
+    function seleccionarTab(tab, element) {
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.className = 'nav-btn flex flex-col items-center py-1.5 px-5 rounded-2xl font-black transition-all text-[#FFC4A8] hover:text-[#FF2E93] cursor-pointer';
+      });
+      element.className = 'nav-btn flex flex-col items-center py-1.5 px-5 rounded-2xl font-black transition-all bg-gradient-to-r from-[#FF6B00] to-[#FF2E93] text-white shadow-md scale-105 cursor-pointer';
+
+      if (tab === 'radar') {
+        mostrarToast("📡 Radar activado: 4 cuñados y 1 jefe en tu zona.");
+      } else if (tab === 'rango') {
+        mostrarToast("🏆 Rango: General Supremo de la Guasa (#1 Mundial).");
+      }
+    }
+  </script>
+</body>
+</html>
