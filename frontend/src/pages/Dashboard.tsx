@@ -95,7 +95,7 @@ export default function Dashboard({ session }: { session: any }) {
         headers: getAuthHeaders()
       });
       const data = await res.json();
-      if (data.contacts) {
+      if (data.contacts && data.contacts.length > 0) {
         const mapped = data.contacts.map((c: any) => ({
           ...c,
           persona: c.bot?.persona || 'Ninguna',
@@ -103,6 +103,7 @@ export default function Dashboard({ session }: { session: any }) {
           avatar: c.isGroup ? '👥' : '👤'
         }));
         setContacts(mapped);
+        contactsLoaded.current = true;
 
         setSelectedContact((curr: any) => {
           if (curr) {
@@ -117,6 +118,13 @@ export default function Dashboard({ session }: { session: any }) {
             (cleanSaved && m.number && m.number.replace(/\D/g, '').includes(cleanSaved))
           ) || mapped.find((m: any) => m.favorite) || null;
         });
+      } else {
+        // WhatsApp se está sincronizando tras vincular el QR por primera vez
+        setTimeout(() => {
+          if (!contactsLoaded.current) {
+            fetchContacts();
+          }
+        }, 3000);
       }
     } catch (error) {
       console.error("Error al cargar contactos:", error);
