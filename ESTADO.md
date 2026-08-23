@@ -17,7 +17,8 @@
   - **Compatibilidad Extensible:** Función `formatPersonaInstruction` para estructurar tanto personalidades fijas como personalizadas creadas por el usuario.
 - [`frontend/src/pages/Dashboard.tsx`](file:///c:/Users/alici/DEVELOPER/GUASAPAPP/frontend/src/pages/Dashboard.tsx):
   - **Experiencia Móvil Táctica:** Implementado el alternador de vista táctil (en pantallas móviles, al pulsar un chat se muestra el monitor/panel y se añade el botón de navegación «← Volver a chats» estilo WhatsApp).
-  - **Robustez de Red:** Configurada la variable dinámica `BACKEND_URL` con soporte para `VITE_BACKEND_URL` y detección de protocolo HTTPS/HTTP para despliegues públicos en Vercel.
+  - **Robustez de Red Total:** Configurada la variable `BACKEND_URL` con fallback directo automático a `https://guasapp-production.up.railway.app` para garantizar comunicación sin interrupciones.
+  - **Claridad de IA en UI:** Actualizado el modal de Ajustes para indicar visualmente que la clave de Google Gemini está activa por defecto en el servidor.
 - [`frontend/src/lib/supabase.ts`](file:///c:/Users/alici/DEVELOPER/GUASAPAPP/frontend/src/lib/supabase.ts) y [`backend/supabase.js`](file:///c:/Users/alici/DEVELOPER/GUASAPAPP/backend/supabase.js):
   - Blindaje total contra caídas: inicialización resiliente de Supabase con `try...catch` y fallback para evitar excepciones de `RealtimeClient` al iniciar el contenedor en Railway.
 - [`PRD_FASE_BETA_AMIGOS.md`](file:///c:/Users/alici/DEVELOPER/GUASAPAPP/PRD_FASE_BETA_AMIGOS.md) **[NUEVO]**:
