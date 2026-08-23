@@ -34,14 +34,14 @@
 ---
 
 ## 2. Estado Actual del Desarrollo
+- **Frontend en Producción (Netlify PWA):** Desplegado y funcionando en vivo con SSL en **`https://guasa-pp.netlify.app`**. PWA instalable en iOS y Android.
 - **Backend en Producción (Railway):** Desplegado y funcionando en vivo con SSL en `https://guasapp-production.up.railway.app`. Servidor Express, WebSockets, Puppeteer y autenticación Supabase activos.
-- **Frontend en Producción (Netlify PWA):** Desplegado con variables de entorno conectadas a Railway y Supabase, listo para ser instalado en dispositivos móviles (iOS/Android) como PWA.
 - **Repositorio GitHub Sincronizado:** Todos los cambios, Dockerfile, netlify.toml y PWA subidos a `main` en https://github.com/aliciasalillas-cmd/GUASApp.git.
 - **Motor de IA Satírico Avanzado:** 14 personalidades con Active Listening y reglas anti-repetición.
 
 ---
 
 ## 3. Próximos Pasos Lógicos
-1. **Prueba de Humo en Móvil:** Abrir la URL pública de Netlify desde el teléfono móvil, añadir a pantalla de inicio (PWA), escanear el QR con WhatsApp y activar un bot para probar el flujo completo.
+1. **Prueba de Humo en Móvil:** Abrir la URL pública `https://guasa-pp.netlify.app` desde el teléfono móvil, añadir a pantalla de inicio (PWA), escanear el QR con WhatsApp y activar un bot para probar el flujo completo.
 2. **Distribución a Amigos (Fase Beta):** Compartir la URL con el grupo de 5-15 amigos/testers para recopilar feedback de las personalidades más cómicas.
 3. **Inicio de Fase 2 (App Nativa en Flutter):** Comenzar la arquitectura en Flutter cuando finalice la fase de pruebas PWA.
