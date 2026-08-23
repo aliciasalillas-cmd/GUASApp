@@ -21,7 +21,9 @@
 ---
 
 ## 3. Próximos Pasos Lógicos
+0. **Refinamiento de Personalidades IA:** Detallar y enriquecer los prompts de las 14 personalidades satíricas para evitar respuestas repetitivas, chistes recurrentes y mejorar la variedad y profundidad del troleo.
 1. **Gestión de Secretos:** Configurar un archivo .env en el backend para almacenar de forma segura la API Key (y añadirlo a .gitignore), para que la app pueda volver a usar Gemini sin comprometer la clave.
 2. **Conversión a PWA (Fase 1 Corto Plazo):** Añadir manifest.json y el Service Worker a la web actual (rontend) usando Vite PWA. Ajustar el diseño CSS para que responda a pantallas móviles como una app completa.
 3. **Dockerización del Backend:** Preparar el Dockerfile en el directorio ackend para contenedorizar Node + Puppeteer y facilitar su despliegue en un VPS.
 4. **Inicio de App Nativa (Fase 2 Medio Plazo):** Comenzar la configuración del proyecto Flutter para el cliente final premium.
+
